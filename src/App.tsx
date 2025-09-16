@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import type { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction, TextareaHTMLAttributes } from 'react'
+import logo from './assets/weaver_logo.png'
+import removeBgLogo from './assets/weaver_logo-removebg-preview.png'
 
 interface ApplicationData {
   description: string
@@ -16,6 +18,28 @@ interface Step {
   title: string
   isCompleted: boolean
   isActive: boolean
+}
+
+function AutoResizeTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const { value, style, ...rest } = props
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+
+  return (
+    <textarea
+      {...rest}
+      ref={textareaRef}
+      rows={1}
+      style={{ ...style, overflow: 'hidden' }}
+      value={value}
+    />
+  )
 }
 
 function App() {
@@ -52,18 +76,10 @@ function App() {
         <div className="header-content">
           <div className="logo">
             <div className="logo-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z" fill="currentColor"/>
-              </svg>
+              <img src={logo} alt="Weaver AI" width={40} height={40} />
             </div>
             <span className="logo-text">Weaver AI</span>
           </div>
-          <nav className="nav">
-            <a href="#" className="nav-link">Features</a>
-            <a href="#" className="nav-link">Examples</a>
-            <a href="#" className="nav-link">Pricing</a>
-            <button className="sign-in-btn">Sign In</button>
-          </nav>
         </div>
       </header>
 
@@ -117,21 +133,18 @@ function App() {
 function ApplicationDetails({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   return (
     <div className="step-content">
-      <div className="step-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z" fill="currentColor"/>
-        </svg>
-      </div>
+        <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>What Web Application would you like built?</h1>
       <p>Describe your vision and let our AI transform it into a fully functional web application. The more details you provide, the better we can tailor your app.</p>
       
       <div className="form-group">
         <label htmlFor="description">Application Description *</label>
-        <textarea
+        <AutoResizeTextarea
           id="description"
           value={data.description}
           onChange={(e) => setData({...data, description: e.target.value})}
           placeholder="Social Media Platform: User profiles, posts, comments, likes, and real-time messaging"
+          maxLength={500}
         />
         <div className="char-count">
           <span>Minimum 50 characters</span>
@@ -141,7 +154,7 @@ function ApplicationDetails({ data, setData }: { data: ApplicationData, setData:
 
       <div className="form-group">
         <label htmlFor="details">Additional Details (Optional)</label>
-        <textarea
+        <AutoResizeTextarea
           id="details"
           value={data.additionalDetails}
           onChange={(e) => setData({...data, additionalDetails: e.target.value})}
@@ -202,13 +215,7 @@ function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: Set
 
   return (
     <div className="step-content">
-      <div className="step-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2"/>
-          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2"/>
-        </svg>
-      </div>
+      <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>Select Your Customizations</h1>
       <p>Choose the features you'd like to include in your application. You can always modify these later.</p>
       
@@ -240,12 +247,7 @@ function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: Set
 function Configuration({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   return (
     <div className="step-content">
-      <div className="step-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-          <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2"/>
-        </svg>
-      </div>
+      <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>Brand Your Application</h1>
       <p>Upload your brand guidelines or provide a URL to ensure your application matches your brand identity.</p>
       
@@ -296,11 +298,7 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
 function Review({ data }: { data: ApplicationData }) {
   return (
     <div className="step-content">
-      <div className="step-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" strokeWidth="2" fill="none"/>
-        </svg>
-      </div>
+      <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>Review & Generate</h1>
       <p>Review your application configuration below and generate your custom web application.</p>
       

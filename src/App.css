@@ -1,6 +1,6 @@
 :root {
-  --primary-color: #10CAD4;
-  --secondary-color: #006BD6;
+  --primary-color: #FDE046;
+  --secondary-color: #FDE046;
   --white: #FFFFFF;
   --gray: #9CA3AF;
   --dark-gray: #374151;
@@ -8,7 +8,7 @@
   --border-gray: #E5E7EB;
   --text-primary: #111827;
   --text-secondary: #6B7280;
-  --bg-dark: #1F2937;
+  --bg-dark: #090909;
 }
 
 * {
@@ -18,7 +18,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: "Orbitron", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   background-color: var(--bg-dark);
   color: var(--white);
   line-height: 1.6;
@@ -97,7 +97,7 @@ body {
 }
 
 .sign-in-btn:hover {
-  background: #0056b3;
+  background: #FDE046;
 }
 
 /* Main Content */
@@ -225,14 +225,15 @@ body {
 .form-group textarea,
 .form-group input {
   width: 100%;
-  padding: 1rem;
+  padding: 1rem 1.125rem;
   border: 1px solid var(--border-gray);
   border-radius: 8px;
   font-size: 1rem;
   background: var(--white);
   color: var(--text-primary);
   resize: vertical;
-  min-height: 120px;
+  min-height: 160px;
+  line-height: 1.6;
 }
 
 .form-group input {
@@ -244,6 +245,24 @@ body {
   outline: none;
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 3px rgba(0, 107, 214, 0.1);
+}
+
+/* Textarea enhancements */
+.form-group textarea::placeholder {
+  color: #9aa3af;
+}
+
+.form-group textarea::-webkit-scrollbar {
+  width: 10px;
+}
+
+.form-group textarea::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 8px;
+}
+
+.form-group textarea::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
 .char-count {
@@ -404,7 +423,7 @@ body {
 }
 
 .upload-btn:hover {
-  background: #0056b3;
+  background:rgb(227, 195, 37);
 }
 
 .brand-option label {
@@ -573,6 +592,7 @@ body {
 .back-btn:hover {
   color: var(--white);
   border-color: var(--text-secondary);
+  background: var(--secondary-color);
 }
 
 .continue-btn {
@@ -591,7 +611,7 @@ body {
 }
 
 .continue-btn:hover {
-  background: #0056b3;
+  background:rgb(233, 197, 19);
 }
 
 /* Responsive Design */
