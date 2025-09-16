@@ -2,11 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import type { Dispatch, SetStateAction, TextareaHTMLAttributes } from 'react'
 import logo from './assets/weaver_logo.png'
-import removeBgLogo from './assets/weaver_logo-removebg-preview.png'
 
 interface ApplicationData {
   description: string
-  additionalDetails: string
   selectedFeatures: string[]
   brandGuidelines: string
   apiUsername?: string
@@ -66,7 +64,6 @@ function App() {
   const [currentStep, setCurrentStep] = useState(1)
   const [applicationData, setApplicationData] = useState<ApplicationData>({
     description: '',
-    additionalDetails: '',
     selectedFeatures: [] as string[],
     brandGuidelines: '',
     apiUsername: '',
@@ -82,9 +79,9 @@ function App() {
   const API_ENDPOINT = 'https://api.34.120.203.160.nip.io/v1/providers/github/installs/cloud/repositories-ai'
 
   const steps: Step[] = [
-    { id: 1, title: 'Application Details', isCompleted: currentStep > 1, isActive: currentStep === 1 },
-    { id: 2, title: 'Features & Design', isCompleted: currentStep > 2, isActive: currentStep === 2 },
-    { id: 3, title: 'Configuration', isCompleted: currentStep > 3, isActive: currentStep === 3 },
+    { id: 1, title: 'Describe', isCompleted: currentStep > 1, isActive: currentStep === 1 },
+    { id: 2, title: 'Choose', isCompleted: currentStep > 2, isActive: currentStep === 2 },
+    { id: 3, title: 'Configure', isCompleted: currentStep > 3, isActive: currentStep === 3 },
     { id: 4, title: 'Review', isCompleted: currentStep > 4, isActive: currentStep === 4 }
   ]
 
@@ -93,7 +90,6 @@ function App() {
       setCurrentStep(currentStep - 1)
     }
   }
-
 
   const submitApplication = async () => {
     setIsSubmitting(true)
@@ -134,6 +130,11 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    const el = document.getElementById("main");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [currentStep]);
+
   return (
     <div className="app">
       <header className="header">
@@ -147,8 +148,8 @@ function App() {
         </div>
       </header>
 
-      <main className="main">
-        <div className="step-indicator">
+      <main id="main" className="main">
+        <div id="step-indicator" className="step-indicator">
           {steps.map((step, index) => (
             <div key={step.id} className="step-item">
               <div className={`step-circle ${step.isCompleted ? 'completed' : step.isActive ? 'active' : 'inactive'}`}>
@@ -204,17 +205,16 @@ function App() {
 function ApplicationDetails({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   return (
     <div className="step-content">
-        <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
-      <h1>What Web Application would you like built?</h1>
-      <p>Describe your vision and let our AI transform it into a fully functional web application. The more details you provide, the better we can tailor your app.</p>
+      <h1>What Would you like built today?</h1>
+      <p>Describe your vision and let our AI take charge</p>
       
       <div className="form-group">
-        <label htmlFor="description">Application Description *</label>
+        <label htmlFor="description">Describe Your App *</label>
         <AutoResizeTextarea
           id="description"
           value={data.description}
           onChange={(e) => setData({...data, description: e.target.value})}
-          placeholder="Social Media Platform: User profiles, posts, comments, likes, and real-time messaging"
+          placeholder="Example: I want to build a tourism website for my city to promote all the wonderful sights it has to offer."
           maxLength={500}
         />
         <div className="char-count">
@@ -223,26 +223,10 @@ function ApplicationDetails({ data, setData }: { data: ApplicationData, setData:
         </div>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="details">Additional Details (Optional)</label>
-        <AutoResizeTextarea
-          id="details"
-          value={data.additionalDetails}
-          onChange={(e) => setData({...data, additionalDetails: e.target.value})}
-          placeholder="Any specific features, integrations, or technical requirements? User roles, payment systems, third-party services, etc."
-        />
-      </div>
-
       <div className="inspiration-section">
         <div className="inspiration-header">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <span>Need inspiration? Here are some optional examples:</span>
+          <span>Need inspiration? Click below</span>
         </div>
-        <p>Click any example below to automatically fill in your description, or write your own from scratch.</p>
-        
         <div className="examples-grid">
           <div className="example-card" onClick={() => setData({...data, description: 'Online marketplace with product catalog, shopping cart, and payment processing'})}>
             <h3>E-commerce Store</h3>
@@ -268,11 +252,11 @@ function ApplicationDetails({ data, setData }: { data: ApplicationData, setData:
 
 function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   const features = [
-    { id: 'weather', title: 'Add Weather Widget', description: 'Display current weather and forecasts', icon: '☁️' },
-    { id: 'search', title: 'Add Smart Search', description: 'AI-powered search functionality', icon: '🔍', selected: true },
-    { id: 'social', title: 'Add Social Engagement', description: 'Social sharing and interactions', icon: '👥' },
-    { id: 'contact', title: 'Add Contact Form', description: 'Customizable contact and inquiry forms', icon: '✉️' },
-    { id: 'news', title: 'Add Live News', description: 'Real-time news feeds and updates', icon: '📰' }
+    { id: 'weather', title: 'Weather Widget', description: 'Display current weather and forecasts', icon: '☁️' },
+    { id: 'search', title: 'Smart Search', description: 'AI-powered search functionality', icon: '🔍', selected: true },
+    { id: 'social', title: 'Social Engagement', description: 'Social sharing and interactions', icon: '👥' },
+    { id: 'contact', title: 'Contact Form', description: 'Customizable contact and inquiry forms', icon: '✉️' },
+    { id: 'news', title: 'Live News', description: 'Real-time news feeds and updates', icon: '📰' }
   ]
 
   const toggleFeature = (featureId: string) => {
@@ -286,9 +270,8 @@ function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: Set
 
   return (
     <div className="step-content">
-      <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>Select Your Customizations</h1>
-      <p>Choose the features you'd like to include in your application. You can always modify these later.</p>
+      <p>Choose the features you'd like to included.</p>
       
       <div className="features-grid">
         {features.map((feature) => (
@@ -318,9 +301,8 @@ function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: Set
 function Configuration({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   return (
     <div className="step-content">
-      <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>Brand Your Application</h1>
-      <p>Upload your brand guidelines or provide a URL to ensure your application matches your brand identity.</p>
+      <p>Upload your brand guidelines or provide a URL.</p>
       
       <div className="brand-options">
         <div className="brand-option">
@@ -334,14 +316,15 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
           <div className="brand-icon">🔗</div>
           <h3>Or Provide URL</h3>
           <p>Link to your online brand guidelines or style guide</p>
-          <label htmlFor="guidelines-url">Guidelines URL</label>
-          <input
-            type="url"
-            id="guidelines-url"
-            value={data.brandGuidelines}
-            onChange={(e) => setData({...data, brandGuidelines: e.target.value})}
-            placeholder="https://your-brand-guidelines.com"
-          />
+          <div className="form-group">
+            <input
+              type="url"
+              id="guidelines-url"
+              value={data.brandGuidelines}
+              onChange={(e) => setData({...data, brandGuidelines: e.target.value})}
+              placeholder="https://your-brand-guidelines.com"
+            />
+          </div>
         </div>
       </div>
 
@@ -418,7 +401,6 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
 function Review({ data, result, error }: { data: ApplicationData, result: RepoResponse | null, error: string | null }) {
   return (
     <div className="step-content">
-      <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
       <h1>Review & Generate</h1>
       <p>Review your application configuration below and generate your custom web application.</p>
       
@@ -431,12 +413,6 @@ function Review({ data, result, error }: { data: ApplicationData, result: RepoRe
           <div className="review-content">
             <p><strong>Description:</strong></p>
             <p>{data.description || 'No description provided'}</p>
-            {data.additionalDetails && (
-              <>
-                <p><strong>Additional Details:</strong></p>
-                <p>{data.additionalDetails}</p>
-              </>
-            )}
           </div>
         </div>
 
@@ -502,13 +478,13 @@ function Review({ data, result, error }: { data: ApplicationData, result: RepoRe
         </div>
       </div>
 
-      <div className="review-section">
-        <div className="review-header">
-          <span className="review-number">5</span>
-          <h3>Generation Result</h3>
-        </div>
-        <div className="review-content">
-          {result ? (
+      {result ? (
+        <div className="review-section">
+          <div className="review-header">
+            <span className="review-number">5</span>
+            <h3>Generation Result</h3>
+          </div>
+          <div className="review-content">
             <div className="result-card">
               <p><strong>Repository:</strong> {result.owner?.name}/{result.repo}</p>
               <p><strong>Default Branch:</strong> {result.defaultBranch}</p>
@@ -516,13 +492,19 @@ function Review({ data, result, error }: { data: ApplicationData, result: RepoRe
               <p><strong>Updated:</strong> {new Date(result.updateTime).toLocaleString()}</p>
               <a className="repo-link" href={`https://github.com/${result.owner?.name}/${result.repo}`} target="_blank" rel="noreferrer">Open on GitHub</a>
             </div>
-          ) : error ? (
-            <div className="error-box">{error}</div>
-          ) : (
-            <p>Click "Generate My Application" to create your repository.</p>
-          )}
+          </div>
         </div>
-      </div>
+        ) : error ? (
+          <div className="review-section">
+            <div className="review-header">
+              <span className="review-number">5</span>
+              <h3>Generation Result</h3>
+            </div>
+            <div className="review-content">
+              <div className="error-box">{error}</div>
+            </div>
+          </div>
+        ) : null}
     </div>
   )
 }
