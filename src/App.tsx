@@ -12,6 +12,7 @@ interface ApplicationData {
   apiUsername?: string
   apiPassword?: string
   sshPrivateKey?: string
+  githubUsername?: string
 }
 
 type SetApplicationData = Dispatch<SetStateAction<ApplicationData>>
@@ -70,14 +71,15 @@ function App() {
     brandGuidelines: '',
     apiUsername: '',
     apiPassword: '',
-    sshPrivateKey: ''
+    sshPrivateKey: '',
+    githubUsername: ''
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [repoResult, setRepoResult] = useState<RepoResponse | null>(null)
 
-  const API_ENDPOINT = 'https://api.34.120.203.160.nip.io/v1/providers/github/installs/cloud/repositories-ai?variant=scaffolding'
+  const API_ENDPOINT = 'https://api.34.120.203.160.nip.io/v1/providers/github/installs/cloud/repositories-ai'
 
   const steps: Step[] = [
     { id: 1, title: 'Application Details', isCompleted: currentStep > 1, isActive: currentStep === 1 },
@@ -92,27 +94,24 @@ function App() {
     }
   }
 
-  const buildPayload = (data: ApplicationData) => ({
-    description: data.description,
-    additionalDetails: data.additionalDetails,
-    selectedFeatures: data.selectedFeatures,
-    brandGuidelines: data.brandGuidelines,
-    credentials: {
-      apiUsername: data.apiUsername,
-      apiPassword: data.apiPassword,
-      sshPrivateKey: data.sshPrivateKey
-    }
-  })
 
   const submitApplication = async () => {
     setIsSubmitting(true)
     setSubmitError(null)
     setRepoResult(null)
+    const authString = applicationData.apiUsername + ':'+ applicationData.apiPassword
+    console.log(authString)
     try {
-      const res = await fetch(API_ENDPOINT, {
+      const res = await fetch(API_ENDPOINT + '?variant=' + applicationData.description.replaceAll(' ', '+'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildPayload(applicationData))
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa(authString)},
+        body: JSON.stringify(  {"isPrivate": true,
+  "owner": {
+    "name": "AdrMAr5",
+    "type": "user"
+  },
+  "repo": "headless-hackaton-" + (Math.random() * 1000 / 100).toString()}
+)
       })
       if (!res.ok) {
         throw new Error(`Request failed with status ${res.status}`)
@@ -397,6 +396,16 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
               value={data.sshPrivateKey}
               onChange={(e) => setData({ ...data, sshPrivateKey: e.target.value })}
               placeholder="-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----"
+              style={{ minHeight: '120px' }}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="ssh-key">GitHub username</label>
+            <textarea
+              id="ssh-key"
+              value={data.githubUsername}
+              onChange={(e) => setData({ ...data, githubUsername: e.target.value })}
+              placeholder=""
               style={{ minHeight: '120px' }}
             />
           </div>
