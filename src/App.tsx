@@ -9,6 +9,9 @@ interface ApplicationData {
   additionalDetails: string
   selectedFeatures: string[]
   brandGuidelines: string
+  apiUsername?: string
+  apiPassword?: string
+  sshPrivateKey?: string
 }
 
 type SetApplicationData = Dispatch<SetStateAction<ApplicationData>>
@@ -18,6 +21,22 @@ interface Step {
   title: string
   isCompleted: boolean
   isActive: boolean
+}
+
+interface RepoOwner {
+  name: string
+  type: string
+}
+
+interface RepoResponse {
+  name: string
+  defaultBranch: string
+  readProtected: boolean
+  updateTime: string
+  isPrivate: boolean
+  owner: RepoOwner
+  repo: string
+  id: string
 }
 
 function AutoResizeTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -48,8 +67,17 @@ function App() {
     description: '',
     additionalDetails: '',
     selectedFeatures: [] as string[],
-    brandGuidelines: ''
+    brandGuidelines: '',
+    apiUsername: '',
+    apiPassword: '',
+    sshPrivateKey: ''
   })
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [repoResult, setRepoResult] = useState<RepoResponse | null>(null)
+
+  const API_ENDPOINT = 'https://api.34.120.203.160.nip.io/v1/providers/github/installs/cloud/repositories-ai?variant=scaffolding'
 
   const steps: Step[] = [
     { id: 1, title: 'Application Details', isCompleted: currentStep > 1, isActive: currentStep === 1 },
@@ -58,15 +86,52 @@ function App() {
     { id: 4, title: 'Review', isCompleted: currentStep > 4, isActive: currentStep === 4 }
   ]
 
-  const nextStep = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const buildPayload = (data: ApplicationData) => ({
+    description: data.description,
+    additionalDetails: data.additionalDetails,
+    selectedFeatures: data.selectedFeatures,
+    brandGuidelines: data.brandGuidelines,
+    credentials: {
+      apiUsername: data.apiUsername,
+      apiPassword: data.apiPassword,
+      sshPrivateKey: data.sshPrivateKey
+    }
+  })
+
+  const submitApplication = async () => {
+    setIsSubmitting(true)
+    setSubmitError(null)
+    setRepoResult(null)
+    try {
+      const res = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload(applicationData))
+      })
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`)
+      }
+      const json = await res.json()
+      setRepoResult(json as RepoResponse)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unexpected error'
+      setSubmitError(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleContinueOrSubmit = () => {
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1)
+    } else {
+      void submitApplication()
     }
   }
 
@@ -105,7 +170,7 @@ function App() {
         {currentStep === 1 && <ApplicationDetails data={applicationData} setData={setApplicationData} />}
         {currentStep === 2 && <FeaturesDesign data={applicationData} setData={setApplicationData} />}
         {currentStep === 3 && <Configuration data={applicationData} setData={setApplicationData} />}
-        {currentStep === 4 && <Review data={applicationData} />}
+        {currentStep === 4 && <Review data={applicationData} result={repoResult} error={submitError} />}
 
         <div className="navigation">
           {currentStep > 1 && (
@@ -116,8 +181,8 @@ function App() {
               Back
             </button>
           )}
-          <button className="continue-btn" onClick={nextStep}>
-            {currentStep === 4 ? 'Generate My Application' : 
+          <button className="continue-btn" onClick={handleContinueOrSubmit} disabled={isSubmitting} aria-busy={isSubmitting}>
+            {currentStep === 4 ? (isSubmitting ? 'Generating…' : 'Generate My Application') : 
              currentStep === 3 ? 'Continue to Review' :
              currentStep === 2 ? 'Continue to Branding' : 'Continue to Features'}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -125,6 +190,13 @@ function App() {
             </svg>
           </button>
         </div>
+
+        {isSubmitting && (
+          <div className="loading-overlay" role="status" aria-live="polite">
+            <div className="spinner" />
+            <p>Generating your repository…</p>
+          </div>
+        )}
       </main>
     </div>
   )
@@ -291,11 +363,50 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
           </div>
         </div>
       </div>
+
+      <div className="review-section" style={{ marginTop: '2rem' }}>
+        <div className="review-header">
+          <span className="review-number">C</span>
+          <h3>API Access Credentials (demo)</h3>
+        </div>
+        <div className="review-content">
+          <div className="form-group">
+            <label htmlFor="api-username">API Username</label>
+            <input
+              type="text"
+              id="api-username"
+              value={data.apiUsername}
+              onChange={(e) => setData({ ...data, apiUsername: e.target.value })}
+              placeholder="demo-user"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="api-password">API Password</label>
+            <input
+              type="password"
+              id="api-password"
+              value={data.apiPassword}
+              onChange={(e) => setData({ ...data, apiPassword: e.target.value })}
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="ssh-key">SSH Private Key</label>
+            <textarea
+              id="ssh-key"
+              value={data.sshPrivateKey}
+              onChange={(e) => setData({ ...data, sshPrivateKey: e.target.value })}
+              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----"
+              style={{ minHeight: '120px' }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-function Review({ data }: { data: ApplicationData }) {
+function Review({ data, result, error }: { data: ApplicationData, result: RepoResponse | null, error: string | null }) {
   return (
     <div className="step-content">
       <img src={removeBgLogo} alt="Weaver AI" width={120} height={120}/>
@@ -347,6 +458,18 @@ function Review({ data }: { data: ApplicationData }) {
             <p>{data.brandGuidelines || 'No brand guidelines provided'}</p>
           </div>
         </div>
+
+        <div className="review-section">
+          <div className="review-header">
+            <span className="review-number">4</span>
+            <h3>Credentials (masked)</h3>
+          </div>
+          <div className="review-content">
+            <p><strong>API Username:</strong> {data.apiUsername || '—'}</p>
+            <p><strong>API Password:</strong> {data.apiPassword ? '••••••••' : '—'}</p>
+            <p><strong>SSH Private Key:</strong> {data.sshPrivateKey ? '••••••••' : '—'}</p>
+          </div>
+        </div>
       </div>
 
       <div className="next-steps">
@@ -367,6 +490,28 @@ function Review({ data }: { data: ApplicationData }) {
             <h4>Deploy</h4>
             <p>Launch your application with one click to your custom domain</p>
           </div>
+        </div>
+      </div>
+
+      <div className="review-section">
+        <div className="review-header">
+          <span className="review-number">5</span>
+          <h3>Generation Result</h3>
+        </div>
+        <div className="review-content">
+          {result ? (
+            <div className="result-card">
+              <p><strong>Repository:</strong> {result.owner?.name}/{result.repo}</p>
+              <p><strong>Default Branch:</strong> {result.defaultBranch}</p>
+              <p><strong>Visibility:</strong> {result.isPrivate ? 'Private' : 'Public'}</p>
+              <p><strong>Updated:</strong> {new Date(result.updateTime).toLocaleString()}</p>
+              <a className="repo-link" href={`https://github.com/${result.owner?.name}/${result.repo}`} target="_blank" rel="noreferrer">Open on GitHub</a>
+            </div>
+          ) : error ? (
+            <div className="error-box">{error}</div>
+          ) : (
+            <p>Click "Generate My Application" to create your repository.</p>
+          )}
         </div>
       </div>
     </div>
