@@ -76,7 +76,7 @@ function App() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [repoResult, setRepoResult] = useState<RepoResponse | null>(null)
 
-  const API_ENDPOINT = 'https://api.34.120.203.160.nip.io/v1/providers/github/installs/cloud/repositories-ai'
+  const N8N_WEBHOOK_URL = 'https://richardgash.app.n8n.cloud/webhook-test/create-site'
 
   const steps: Step[] = [
     { id: 1, title: 'Describe', isCompleted: currentStep > 1, isActive: currentStep === 1 },
@@ -95,23 +95,30 @@ function App() {
     setIsSubmitting(true)
     setSubmitError(null)
     setRepoResult(null)
-    const authString = applicationData.apiUsername + ':'+ applicationData.apiPassword
-    console.log(authString)
+    
     try {
-      const res = await fetch(API_ENDPOINT + '?variant=' + applicationData.description.replaceAll(' ', '+'), {
+      const requestBody = {
+        env_type: "staging",
+        admin_email: "n8n@example.com",
+        seed_topic: applicationData.description,
+        post_status: "publish",
+        api_username: applicationData.apiUsername,
+        api_password: applicationData.apiPassword,
+        repo_provider: "providers/github/installs/cloud/repositories/1031476324",
+        repo_name: `headless-hackaton-${Math.floor(Math.random() * 10000)}`,
+        count: 10
+      }
+
+      const res = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa(authString)},
-        body: JSON.stringify(  {"isPrivate": true,
-  "owner": {
-    "name": applicationData.githubUsername,
-    "type": "user"
-  },
-  "repo": "headless-hackaton-" + (Math.floor(Math.random() * 10000)).toString()}
-)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
       })
+      
       if (!res.ok) {
         throw new Error(`Request failed with status ${res.status}`)
       }
+      
       const json = await res.json()
       setRepoResult(json as RepoResponse)
     } catch (err: unknown) {
@@ -184,7 +191,7 @@ function App() {
           <button className="continue-btn" onClick={handleContinueOrSubmit} disabled={isSubmitting} aria-busy={isSubmitting}>
             {currentStep === 4 ? (isSubmitting ? 'Generating…' : 'Generate My Application') : 
              currentStep === 3 ? 'Continue to Review' :
-             currentStep === 2 ? 'Continue to Branding' : 'Continue to Features'}
+             currentStep === 2 ? 'Continue to Configure' : 'Continue to Features'}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M5 12h14m0 0L12 5m7 7L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -253,44 +260,26 @@ function ApplicationDetails({ data, setData }: { data: ApplicationData, setData:
 function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   const features = [
     { id: 'weather', title: 'Weather Widget', description: 'Display current weather and forecasts', icon: '☁️' },
-    { id: 'search', title: 'Smart Search', description: 'AI-powered search functionality', icon: '🔍', selected: true },
+    { id: 'search', title: 'Smart Search', description: 'AI-powered search functionality', icon: '🔍' },
     { id: 'social', title: 'Social Engagement', description: 'Social sharing and interactions', icon: '👥' },
     { id: 'contact', title: 'Contact Form', description: 'Customizable contact and inquiry forms', icon: '✉️' },
     { id: 'news', title: 'Live News', description: 'Real-time news feeds and updates', icon: '📰' }
   ]
 
-  const toggleFeature = (featureId: string) => {
-    const currentFeatures = data.selectedFeatures || []
-    if (currentFeatures.includes(featureId)) {
-      setData({...data, selectedFeatures: currentFeatures.filter((id: string) => id !== featureId)})
-    } else {
-      setData({...data, selectedFeatures: [...currentFeatures, featureId]})
-    }
-  }
-
   return (
     <div className="step-content">
-      <h1>Select Your Customizations</h1>
-      <p>Choose the features you'd like to included.</p>
+      <h1>Available Features</h1>
+      <p>Your application will include these powerful features.</p>
       
       <div className="features-grid">
         {features.map((feature) => (
           <div 
             key={feature.id}
-            className={`feature-card ${data.selectedFeatures?.includes(feature.id) ? 'selected' : ''}`}
-            onClick={() => toggleFeature(feature.id)}
+            className="feature-card"
           >
             <div className="feature-icon">{feature.icon}</div>
             <h3>{feature.title}</h3>
             <p>{feature.description}</p>
-            {data.selectedFeatures?.includes(feature.id) && (
-              <div className="selected-indicator">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" fill="currentColor"/>
-                  <path d="M16 9l-7 7-4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            )}
           </div>
         ))}
       </div>
@@ -301,55 +290,13 @@ function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: Set
 function Configuration({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
   return (
     <div className="step-content">
-      <h1>Brand Your Application</h1>
-      <p>Upload your brand guidelines or provide a URL.</p>
+      <h1>Configure Your Application</h1>
+      <p>Provide your API credentials to generate your application.</p>
       
-      <div className="brand-options">
-        <div className="brand-option">
-          <div className="brand-icon">📤</div>
-          <h3>Upload PDF Guidelines</h3>
-          <p>Upload your brand guidelines document (PDF format)</p>
-          <button className="upload-btn">Click to upload PDF</button>
-        </div>
-        
-        <div className="brand-option">
-          <div className="brand-icon">🔗</div>
-          <h3>Or Provide URL</h3>
-          <p>Link to your online brand guidelines or style guide</p>
-          <div className="form-group">
-            <input
-              type="url"
-              id="guidelines-url"
-              value={data.brandGuidelines}
-              onChange={(e) => setData({...data, brandGuidelines: e.target.value})}
-              placeholder="https://your-brand-guidelines.com"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="extraction-info">
-        <h3>What we'll extract from your brand guidelines:</h3>
-        <div className="extraction-items">
-          <div className="extraction-item">
-            <span className="extraction-icon">🎨</span>
-            <span>Color Palette</span>
-          </div>
-          <div className="extraction-item">
-            <span className="extraction-icon">Aa</span>
-            <span>Typography</span>
-          </div>
-          <div className="extraction-item">
-            <span className="extraction-icon">📐</span>
-            <span>Layout Style</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="review-section" style={{ marginTop: '2rem' }}>
+      <div className="review-section">
         <div className="review-header">
-          <span className="review-number">C</span>
-          <h3>API Access Credentials (demo)</h3>
+          <span className="review-number">1</span>
+          <h3>API Access Credentials</h3>
         </div>
         <div className="review-content">
           <div className="form-group">
@@ -359,7 +306,7 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
               id="api-username"
               value={data.apiUsername}
               onChange={(e) => setData({ ...data, apiUsername: e.target.value })}
-              placeholder="demo-user"
+              placeholder="Enter your API username"
             />
           </div>
           <div className="form-group">
@@ -369,27 +316,7 @@ function Configuration({ data, setData }: { data: ApplicationData, setData: SetA
               id="api-password"
               value={data.apiPassword}
               onChange={(e) => setData({ ...data, apiPassword: e.target.value })}
-              placeholder="••••••••"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="ssh-key">SSH Private Key</label>
-            <textarea
-              id="ssh-key"
-              value={data.sshPrivateKey}
-              onChange={(e) => setData({ ...data, sshPrivateKey: e.target.value })}
-              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----"
-              style={{ minHeight: '120px' }}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="ssh-key">GitHub username</label>
-            <textarea
-              id="ssh-key"
-              value={data.githubUsername}
-              onChange={(e) => setData({ ...data, githubUsername: e.target.value })}
-              placeholder=""
-              style={{ minHeight: '120px' }}
+              placeholder="Enter your API password"
             />
           </div>
         </div>
@@ -419,40 +346,11 @@ function Review({ data, result, error }: { data: ApplicationData, result: RepoRe
         <div className="review-section">
           <div className="review-header">
             <span className="review-number">2</span>
-            <h3>Selected Features</h3>
-          </div>
-          <div className="review-content">
-            {data.selectedFeatures?.length > 0 ? (
-              <div className="selected-features">
-                {data.selectedFeatures.map((feature: string) => (
-                  <span key={feature} className="feature-tag">{feature}</span>
-                ))}
-              </div>
-            ) : (
-              <p>No features selected</p>
-            )}
-          </div>
-        </div>
-
-        <div className="review-section">
-          <div className="review-header">
-            <span className="review-number">3</span>
-            <h3>Brand Guidelines</h3>
-          </div>
-          <div className="review-content">
-            <p>{data.brandGuidelines || 'No brand guidelines provided'}</p>
-          </div>
-        </div>
-
-        <div className="review-section">
-          <div className="review-header">
-            <span className="review-number">4</span>
             <h3>Credentials (masked)</h3>
           </div>
           <div className="review-content">
             <p><strong>API Username:</strong> {data.apiUsername || '—'}</p>
             <p><strong>API Password:</strong> {data.apiPassword ? '••••••••' : '—'}</p>
-            <p><strong>SSH Private Key:</strong> {data.sshPrivateKey ? '••••••••' : '—'}</p>
           </div>
         </div>
       </div>
