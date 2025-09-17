@@ -103,7 +103,7 @@ function App() {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa(authString)},
         body: JSON.stringify(  {"isPrivate": true,
   "owner": {
-    "name": "AdrMAr5",
+    "name": applicationData.githubUsername,
     "type": "user"
   },
   "repo": "headless-hackaton-" + (Math.floor(Math.random() * 10000)).toString()}
