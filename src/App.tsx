@@ -175,7 +175,7 @@ function App() {
         </div>
 
         {currentStep === 1 && <ApplicationDetails data={applicationData} setData={setApplicationData} />}
-        {currentStep === 2 && <FeaturesDesign data={applicationData} setData={setApplicationData} />}
+        {currentStep === 2 && <FeaturesDesign />}
         {currentStep === 3 && <Configuration data={applicationData} setData={setApplicationData} />}
         {currentStep === 4 && <Review data={applicationData} result={repoResult} error={submitError} />}
 
@@ -257,7 +257,7 @@ function ApplicationDetails({ data, setData }: { data: ApplicationData, setData:
   )
 }
 
-function FeaturesDesign({ data, setData }: { data: ApplicationData, setData: SetApplicationData }) {
+function FeaturesDesign() {
   const features = [
     { id: 'weather', title: 'Weather Widget', description: 'Display current weather and forecasts', icon: '☁️' },
     { id: 'search', title: 'Smart Search', description: 'AI-powered search functionality', icon: '🔍' },
