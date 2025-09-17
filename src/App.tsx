@@ -106,7 +106,7 @@ function App() {
     "name": "AdrMAr5",
     "type": "user"
   },
-  "repo": "headless-hackaton-" + (Math.random() * 1000 / 100).toString()}
+  "repo": "headless-hackaton-" + (Math.floor(Math.random() * 10000)).toString()}
 )
       })
       if (!res.ok) {
