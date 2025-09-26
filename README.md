@@ -15,7 +15,9 @@ If you are developing a production application, we recommend updating the config
 
 ## TEST
 
-test 
+test
+
+test in prod
 export default tseslint.config([
   globalIgnores(['dist']),
   {
